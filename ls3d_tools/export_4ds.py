@@ -345,7 +345,7 @@ def create_ls3d_objects(root_objects, root_armatures):
                 ls3d_child = create_ls3d_object(child, parent)
                 Libraries.Objects.append(ls3d_child)
 
-                create_recursively(ls3d_child, child.children)
+                create_recursively(ls3d_child, ls3d_child.children)
 
         create_recursively(ls3d_obj, ls3d_obj.children)
 
