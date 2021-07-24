@@ -148,8 +148,8 @@ class Libraries:
     Objects: List[LS3DObject]
     Joints: List[LS3DObject]
     WorldArmature: bpy.types.Armature = None
-    MeshInstances: list
-    MeshInstancesParents: list
+    MeshInstances: List[bpy.types.Mesh]
+    MeshInstancesParents: List[LS3DObject]
 
     @staticmethod
     def get_object_by_name(name: str) -> Optional[LS3DObject]:
