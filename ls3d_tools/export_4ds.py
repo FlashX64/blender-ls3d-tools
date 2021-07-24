@@ -15,30 +15,29 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
+from typing import Set
 import bpy
-import bmesh
 from mathutils import Vector, Matrix
 from mathutils.geometry import normal
 from datetime import datetime
 
 from .io_utils import OStream
-from .ls3d_object import is_ls3d_mesh
 from ._4ds_utils import *
 
-def get_root_objects():
+def get_root_objects() -> Tuple[List[bpy.types.Object], List[bpy.types.Object]]:
     root_objects = []
     root_armatures = []
 
     for obj in bpy.context.scene.collection.all_objects:
         if not obj.parent:
-            if obj.type == 'MESH' or obj.type == 'EMPTY' or (obj.type == 'LIGHT' and len(obj.ls3d_props.lenses) > 0):
+            if any([obj.type == 'MESH', obj.type == 'EMPTY', obj.type == 'LIGHT' and len(obj.ls3d_props.lenses) > 0]):
                 root_objects.append(obj)
             elif obj.type == 'ARMATURE':
                 root_armatures.append(obj)
 
     return root_objects, root_armatures
 
-def create_ls3d_sector(ls3d_obj):
+def create_ls3d_sector(ls3d_obj: LS3DObject) -> None:
     children = []
     portals = []
 
@@ -54,7 +53,7 @@ def create_ls3d_sector(ls3d_obj):
 
         p_props = props.portal_props
 
-        p_flags = 0
+        p_flags: PortalFlags = PortalFlags(0)
         if p_props.flag_a:
             p_flags |= PortalFlags.UNKNOWN0
         if p_props.flag_b:
@@ -106,7 +105,7 @@ def create_ls3d_sector(ls3d_obj):
     ls3d_obj.mesh = ls3d_mesh
     ls3d_obj.children = children
 
-def create_ls3d_standard_mesh(ls3d_obj, visual_type):
+def create_ls3d_standard_mesh(ls3d_obj: LS3DObject, visual_type: VisualType) -> None:
     bl_mesh = ls3d_obj.bl_obj.data
 
     children = []
@@ -125,7 +124,7 @@ def create_ls3d_standard_mesh(ls3d_obj, visual_type):
         ls3d_mesh = SingleMorph()
 
 
-    def get_all_used_mats(bl_mesh_data):
+    def get_all_used_mats(bl_mesh_data: bpy.types.Mesh) -> None:
         if len(bl_mesh_data.materials) > 0:
             mats = bl_mesh_data.materials
             for polygon in bl_mesh_data.polygons:
@@ -155,7 +154,7 @@ def create_ls3d_standard_mesh(ls3d_obj, visual_type):
 
     lods = []
 
-    def get_lods(bl_obj, level):
+    def get_lods(bl_obj: bpy.types.Object, level: int):
         """Get all lods recursively"""
         for child in bl_obj.children:
             if child.ls3d_props.is_lod:
@@ -178,7 +177,7 @@ def create_ls3d_standard_mesh(ls3d_obj, visual_type):
         else:
             ls3d_mesh.lods = lods
 
-def create_ls3d_mirror(ls3d_obj):
+def create_ls3d_mirror(ls3d_obj: LS3DObject) -> None:
     ls3d_obj.mesh = Mirror()
 
     bl_obj = ls3d_obj.bl_obj
@@ -195,7 +194,7 @@ def create_ls3d_mirror(ls3d_obj):
     else:
         ls3d_obj.children = bl_obj.children
 
-def create_ls3d_lens(ls3d_obj):
+def create_ls3d_lens(ls3d_obj: LS3DObject) -> None:
     ls3d_obj.mesh = Lens()
 
     bl_obj = ls3d_obj.bl_obj
@@ -208,12 +207,12 @@ def create_ls3d_lens(ls3d_obj):
             if mat not in Libraries.Materials:
                 Libraries.Materials.append(mat)
 
-def create_ls3d_object(bl_obj, ls3d_parent):
+def create_ls3d_object(bl_obj: bpy.types.Object, ls3d_parent: Optional[LS3DObject]) -> None:
     props = bl_obj.ls3d_props
 
     print(f"Exporting {bl_obj.name}")
 
-    def get_obj_and_visual_type():
+    def get_obj_and_visual_type() -> Tuple[ObjectType, Optional[VisualType]]:
         if bl_obj.type == 'MESH':
             mesh_type = props.mesh_type
 
@@ -335,7 +334,7 @@ def create_ls3d_object(bl_obj, ls3d_parent):
 
     return ls3d_obj
 
-def create_ls3d_objects(root_objects, root_armatures):
+def create_ls3d_objects(root_objects: List[bpy.types.Object], root_armatures: List[bpy.types.Object]) -> None:
     for obj in root_objects:
         ls3d_obj = create_ls3d_object(obj, None)
         Libraries.Objects.append(ls3d_obj)
@@ -349,7 +348,7 @@ def create_ls3d_objects(root_objects, root_armatures):
 
         create_recursively(ls3d_obj, ls3d_obj.children)
 
-def export_4ds(filepath):
+def export_4ds(filepath: str) -> None:
     file = OStream(filepath)
 
     file.stream.write(LS3D_4DS_SIGNATURE)
@@ -388,7 +387,7 @@ def export_4ds(filepath):
     del Libraries.MeshInstances
     del Libraries.MeshInstancesParents
 
-def save_4ds(context, filepath):
+def save_4ds(context: bpy.types.Context, filepath: str) -> Set[str]:
     export_4ds(filepath)
 
     return {'FINISHED'}

@@ -59,12 +59,12 @@ class LS3D_PT_MirrorPanel(bpy.types.Panel):
     bl_context = "object"
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context: bpy.types.Context) -> bool:
         obj = context.active_object
         props = obj.ls3d_props
         return props.mesh_type == 'MIRROR'
 
-    def draw(self, context):
+    def draw(self, context: bpy.types.Context) -> None:
         obj = context.active_object
         props = obj.ls3d_props
         mirror_props = props.mirror_props

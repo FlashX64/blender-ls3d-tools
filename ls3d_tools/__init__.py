@@ -26,6 +26,7 @@ bl_info = {
     "category" : "Import-Export"
 }
 
+from typing import Set
 import bpy
 from bpy_extras.io_utils import ImportHelper, ExportHelper
 from bpy.props import StringProperty
@@ -102,11 +103,11 @@ class Import4DS(Operator, ImportHelper):
         options={'HIDDEN'}
     )
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         from . import import_4ds
-        return import_4ds.load_4ds(self, self.filepath)
+        return import_4ds.load_4ds(context, self.filepath)
 
-def menu_func_import(self, context):
+def menu_func_import(self, context: bpy.types.Context) -> None:
     self.layout.operator(Import4DS.bl_idname, text="LS3D 4DS (.4ds)")
 
 class Export4DS(Operator, ExportHelper):
@@ -121,12 +122,12 @@ class Export4DS(Operator, ExportHelper):
         options={'HIDDEN'}
     )
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         from . import export_4ds
 
         return export_4ds.save_4ds(context, self.filepath)
 
-def menu_func_export(self, context):
+def menu_func_export(self, context: bpy.types.Context) -> None:
     self.layout.operator(Export4DS.bl_idname, text="LS3D 4DS (.4ds)")
 
 classes = [
@@ -175,7 +176,7 @@ classes = [
     Export4DS
 ]
 
-def register():    
+def register() -> None:    
     for cls in classes:
         bpy.utils.register_class(cls)
 
@@ -187,7 +188,7 @@ def register():
     bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
 
 
-def unregister():
+def unregister() -> None:
     # Remove LS3D properties
     del bpy.types.Object.ls3d_props
     del bpy.types.Material.ls3d_props

@@ -15,11 +15,13 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
+from typing import Set
 import bpy
 from bpy.props import (
     FloatProperty,
     PointerProperty
 )
+from bpy.types import AnyType
 
 class LS3DLensProperty(bpy.types.PropertyGroup):
     unknown_a: FloatProperty(
@@ -36,7 +38,7 @@ class LS3DLensProperty(bpy.types.PropertyGroup):
         )
 
 class LS3D_UL_ls3d_lenses(bpy.types.UIList):
-    def draw_item(self, _context, layout, _data, item, icon, _active_data, _active_propname, _index):
+    def draw_item(self, _context: bpy.types.Context, layout: bpy.types.UILayout, _data: AnyType, item: LS3DLensProperty, icon: int, _active_data: AnyType, _active_propname: str, _index: int) -> None:
         lens = item
         if self.layout_type in {'DEFAULT', 'COMPACT'}:
             if lens:
@@ -60,10 +62,10 @@ class LS3DAddLens(bpy.types.Operator):
     bl_description = "Add a new lens slot"
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context: bpy.types.Context) -> bool:
         return context.active_object != None
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         obj = context.active_object
 
         ls3d_props = obj.ls3d_props
@@ -79,10 +81,10 @@ class LS3DRemoveLens(bpy.types.Operator):
     bl_description = "Remove the selected lens slot"
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context: bpy.types.Context) -> bool:
         return context.active_object != None
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         obj = context.active_object
 
         ls3d_props = obj.ls3d_props

@@ -15,6 +15,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
+from typing import Optional, Set
 import bpy
 from bpy.props import (
         StringProperty,
@@ -35,7 +36,7 @@ NODE_ENVIRONMENT = "EnvironmentTex"
 NODE_OUTPUT = "LS3DOutput"
 NODE_SHADER = "LS3DShader"
 
-def get_image_from_node(node, input_name):
+def get_image_from_node(node: bpy.types.Node, input_name: str) -> Optional[bpy.types.Image]:
     input = find_node_input(node, input_name)
     if input:
         for link in input.links:
@@ -45,7 +46,7 @@ def get_image_from_node(node, input_name):
                     return node.image
     return None
 
-def panel_tex_image_draw(layout, ntree, node_name):
+def panel_tex_image_draw(layout: bpy.types.UILayout, ntree: bpy.types.NodeTree, node_name: str) -> None:
     # Look for needed image node
     if node_name in ntree.nodes:
         node = ntree.nodes[node_name]
@@ -53,7 +54,7 @@ def panel_tex_image_draw(layout, ntree, node_name):
     else:
         layout.label(text="Incompatible image node")
 
-def create_ls3d_material(material):
+def create_ls3d_material(material: bpy.types.Material) -> None:
     material.use_nodes = True
     props = material.ls3d_props
     ntree = material.node_tree
@@ -101,10 +102,10 @@ class LS3DConvertMaterial(bpy.types.Operator):
     bl_label = "Convert to LS3D material"
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context: bpy.types.Context) -> bool:
         return context.active_object.active_material is not None
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         obj = context.active_object
         material = obj.active_material
 
@@ -166,7 +167,7 @@ class LS3DAnimatedMapProperties(bpy.types.PropertyGroup):
         description=""
     )
     
-def update_diffuse_texture(self, context):
+def update_diffuse_texture(self, context: bpy.types.Context) -> None:
     if not context.active_object:
         return
 
@@ -196,7 +197,7 @@ def update_diffuse_texture(self, context):
 
                     ntree.links.new(shader_node.inputs["Base Color"], diffuse_node.outputs["Color"])
 
-def update_alpha_texture(self, context):
+def update_alpha_texture(self, context: bpy.types.Context) -> None:
     if not context.active_object:
         return
 
@@ -356,10 +357,10 @@ class LS3D_PT_MaterialPanel(bpy.types.Panel):
     bl_context = "material"
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context: bpy.types.Context) -> bool:
         return context.active_object.active_material != None
 
-    def draw(self, context):
+    def draw(self, context: bpy.types.Context) -> None:
         material = context.active_object.active_material
         props = material.ls3d_props
 
@@ -411,7 +412,7 @@ class LS3D_PT_AnimatedMapPanel(bpy.types.Panel):
     bl_order = 1
     bl_options = {'DEFAULT_CLOSED'}
 
-    def draw(self, context):
+    def draw(self, context: bpy.types.Context) -> None:
         material = context.active_object.active_material
 
         props = material.ls3d_props
@@ -443,7 +444,7 @@ class LS3D_PT_MapsPanel(bpy.types.Panel):
     bl_context = "material"
     bl_order = 0
 
-    def draw(self, context):
+    def draw(self, context: bpy.types.Context) -> None:
         material = context.active_object.active_material
         props = material.ls3d_props
 

@@ -15,16 +15,17 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
+from typing import Set
 import bpy
 from bpy.props import (
-        StringProperty,
-        IntProperty,
-        BoolProperty,
-        FloatProperty,
-        EnumProperty,
-        CollectionProperty,
-        PointerProperty
-        )
+    StringProperty,
+    IntProperty,
+    BoolProperty,
+    FloatProperty,
+    EnumProperty,
+    CollectionProperty,
+    PointerProperty
+)
 
 from mathutils import Matrix, Vector
 
@@ -34,20 +35,24 @@ from .ls3d_mirror import LS3DMirrorProperties
 from .ls3d_lens import LS3DLensProperty
 from .ls3d_target import LS3DTargetProperty
 
+
 class LS3DObjectProperty(bpy.types.PropertyGroup):
     content: StringProperty(maxlen=255)
+
 
 class LS3D_UL_ls3d_props(bpy.types.UIList):
     def draw_item(self, _context, layout, _data, item, icon, _active_data, _active_propname, _index):
         prop = item
         if self.layout_type in {'DEFAULT', 'COMPACT'}:
             if prop:
-                layout.prop(prop, "content", text="", emboss=False, icon_value=icon)
+                layout.prop(prop, "content", text="",
+                            emboss=False, icon_value=icon)
             else:
                 layout.label(text="", icon_value=icon)
         elif self.layout_type == 'GRID':
             layout.alignment = 'CENTER'
             layout.label(text="", icon_value=icon)
+
 
 class LS3DObjectProperties(bpy.types.PropertyGroup):
     mesh_type: EnumProperty(
@@ -59,9 +64,11 @@ class LS3DObjectProperties(bpy.types.PropertyGroup):
             ('OCCLUDER', "Occluder", "The mesh represents a occluder primitive"),
             ('SECTOR', "Sector", "The mesh represents a sector primitive or a portal primitive linked to a sector"),
             ('BILLBOARD', "Billboard", "The mesh always faces the camera"),
-            ('SINGLE_MORPH', "Single morph", "The mesh represents a skin of an armature, to which is linked and its vertices are animated"),
+            ('SINGLE_MORPH', "Single morph",
+             "The mesh represents a skin of an armature, to which is linked and its vertices are animated"),
             ('MORPH', "Morph", "The mesh vertices are animated"),
-            ('SINGLE', "Single", "The mesh represents a skin of an armature, to which is linked"),
+            ('SINGLE', "Single",
+             "The mesh represents a skin of an armature, to which is linked"),
             ('STANDARD', "Standard", "Standard mesh")
         ]
     )
@@ -77,7 +84,7 @@ class LS3DObjectProperties(bpy.types.PropertyGroup):
         description="Dynamic shadows are projected onto the mesh surface",
         default=True
     )
-    
+
     visual_flag_c: BoolProperty(
         name="Unknown",
         default=False
@@ -176,7 +183,7 @@ class LS3DObjectProperties(bpy.types.PropertyGroup):
         name="Unknown",
         default=1
     )
-    
+
     targets: CollectionProperty(type=LS3DTargetProperty)
     active_target_index: IntProperty()
 
@@ -191,23 +198,24 @@ class LS3DObjectProperties(bpy.types.PropertyGroup):
         ]
     )
 
-    #dummy_display_size_y: FloatProperty(
+    # dummy_display_size_y: FloatProperty(
     #    name="Empty Display Size",
     #    description="Size of display for empties (not shown in the viewport)",
     #    subtype='DISTANCE',
     #    min=0.01,
     #    max=1000.0,
     #    step=0.01
-    #)
-    
-    #dummy_display_size_z: FloatProperty(
+    # )
+
+    # dummy_display_size_z: FloatProperty(
     #    name="Empty Display Size",
     #    description="Size of display for empties (not shown in the viewport)",
     #    subtype='DISTANCE',
     #    min=0.01,
     #    max=1000.0,
     #    step=0.01
-    #)
+    # )
+
 
 class LS3DAddProperty(bpy.types.Operator):
     bl_idname = "object.ls3d_property_add"
@@ -215,18 +223,20 @@ class LS3DAddProperty(bpy.types.Operator):
     bl_description = "Add a new property slot"
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context: bpy.types.Context) -> bool:
         return context.active_object != None
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         obj = context.active_object
 
         ls3d_props = obj.ls3d_props
 
         ls3d_props.user_defined_properties.add()
-        ls3d_props.active_property_index = len(ls3d_props.user_defined_properties) - 1
+        ls3d_props.active_property_index = len(
+            ls3d_props.user_defined_properties) - 1
 
         return {'FINISHED'}
+
 
 class LS3DRemoveProperty(bpy.types.Operator):
     bl_idname = "object.ls3d_property_remove"
@@ -234,23 +244,26 @@ class LS3DRemoveProperty(bpy.types.Operator):
     bl_description = "Remove the selected property slot"
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context: bpy.types.Context) -> None:
         return context.active_object != None
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         obj = context.active_object
 
         ls3d_props = obj.ls3d_props
 
-        ls3d_props.user_defined_properties.remove(ls3d_props.active_property_index)
+        ls3d_props.user_defined_properties.remove(
+            ls3d_props.active_property_index)
 
         if ls3d_props.active_property_index >= len(ls3d_props.user_defined_properties):
-            ls3d_props.active_property_index = len(ls3d_props.user_defined_properties) - 1
+            ls3d_props.active_property_index = len(
+                ls3d_props.user_defined_properties) - 1
 
         if ls3d_props.active_property_index < 0:
             ls3d_props.active_property_index = 0
 
         return {'FINISHED'}
+
 
 class LS3DDistanceFromCamera(bpy.types.Operator):
     bl_idname = "object.ls3d_distance_from_camera"
@@ -258,10 +271,10 @@ class LS3DDistanceFromCamera(bpy.types.Operator):
     bl_description = "Set the draw distance to the current distance from the camera"
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context: bpy.types.Context) -> bool:
         return context.active_object != None
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         obj = context.active_object
 
         props = obj.ls3d_props
@@ -277,13 +290,16 @@ class LS3DDistanceFromCamera(bpy.types.Operator):
 
         return {'FINISHED'}
 
-def is_ls3d_mesh(obj):
+
+def is_ls3d_mesh(obj: bpy.types.Object) -> bool:
     props = obj.ls3d_props
     return props.mesh_type == 'STANDARD' or props.mesh_type == 'BILLBOARD' or props.mesh_type == 'SINGLE' or props.mesh_type == 'MORPH' or props.mesh_type == 'SINGLE_MORPH'
 
-def is_ls3d_visual(obj):
+
+def is_ls3d_visual(obj: bpy.types.Object) -> bool:
     props = obj.ls3d_props
     return obj.type == 'MESH' and (props.mesh_type != 'SECTOR' or props.mesh_type == 'OCCLUDER')
+
 
 class LS3D_PT_ObjectPanel(bpy.types.Panel):
     bl_label = "LS3D Object"
@@ -293,10 +309,10 @@ class LS3D_PT_ObjectPanel(bpy.types.Panel):
     bl_context = "object"
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context: bpy.types.Context) -> bool:
         return context.active_object is not None
 
-    def draw(self, context):
+    def draw(self, context: bpy.types.Context) -> None:
         obj = context.active_object
         props = obj.ls3d_props
 
@@ -315,7 +331,8 @@ class LS3D_PT_ObjectPanel(bpy.types.Panel):
                 if is_mesh:
                     row = layout.row()
                     row.prop(props, "draw_distance")
-                    row.operator("object.ls3d_distance_from_camera", icon='CAMERA_DATA', text="")
+                    row.operator("object.ls3d_distance_from_camera",
+                                 icon='CAMERA_DATA', text="")
 
                 if obj.parent is not None and obj.parent.type == 'MESH':
                     parent_props = obj.parent.ls3d_props
@@ -373,7 +390,8 @@ class LS3D_PT_ObjectPanel(bpy.types.Panel):
                 if props.mesh_type == 'BILLBOARD':
                     row = layout.row()
                     row.label(text="Billboarding axis")
-                    row.prop(props, "billboarding_axis", icon='EMPTY_AXIS', text="")
+                    row.prop(props, "billboarding_axis",
+                             icon='EMPTY_AXIS', text="")
 
             # Lenses
             elif obj.type == 'LIGHT':
@@ -384,7 +402,8 @@ class LS3D_PT_ObjectPanel(bpy.types.Panel):
 
                 layout.label(text="Lenses")
                 row = layout.row()
-                row.template_list("LS3D_UL_ls3d_lenses", "", props, "lenses", props, "active_lens_index", rows=rows)
+                row.template_list("LS3D_UL_ls3d_lenses", "", props,
+                                  "lenses", props, "active_lens_index", rows=rows)
 
                 col = row.column(align=True)
                 col.operator("object.ls3d_lens_add", icon='ADD', text="")
@@ -405,12 +424,13 @@ class LS3D_PT_ObjectPanel(bpy.types.Panel):
                     layout.label(text="Targets")
                     layout.prop(props, "target_unknown")
                     row = layout.row()
-                    row.template_list("LS3D_UL_ls3d_targets", "", props, "targets", props, "active_target_index", rows=rows)
+                    row.template_list("LS3D_UL_ls3d_targets", "", props,
+                                      "targets", props, "active_target_index", rows=rows)
 
                     col = row.column(align=True)
                     col.operator("object.ls3d_target_add", icon='ADD', text="")
-                    col.operator("object.ls3d_target_remove", icon='REMOVE', text="")
-
+                    col.operator("object.ls3d_target_remove",
+                                 icon='REMOVE', text="")
 
             # Portals
             if not props.is_lod and not props.is_portal:
@@ -421,8 +441,10 @@ class LS3D_PT_ObjectPanel(bpy.types.Panel):
 
                 layout.label(text="User defined properties")
                 row = layout.row()
-                row.template_list("LS3D_UL_ls3d_props", "", props, "user_defined_properties", props, "active_property_index", rows=rows)
+                row.template_list("LS3D_UL_ls3d_props", "", props,
+                                  "user_defined_properties", props, "active_property_index", rows=rows)
 
                 col = row.column(align=True)
                 col.operator("object.ls3d_property_add", icon='ADD', text="")
-                col.operator("object.ls3d_property_remove", icon='REMOVE', text="")
+                col.operator("object.ls3d_property_remove",
+                             icon='REMOVE', text="")

@@ -15,14 +15,14 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
-import os
+from typing import Set
 
 from .io_utils import IStream
 from ._4ds_utils import *
 
-def read_materials(file):
+def read_materials(file: IStream) -> None:
     Libraries.Materials = []
-    mat_count = file.read("<H")
+    mat_count: int = file.read("<H")
 
     # Read all materials and load them to the material library
     for i in range(mat_count):
@@ -58,10 +58,10 @@ def read_materials(file):
 
         Libraries.Materials.append(mat)
 
-def read_objects(file):
+def read_objects(file: IStream) -> None:
     Libraries.Objects = []
     Libraries.Joints = []
-    obj_count = file.read("<H")
+    obj_count: int = file.read("<H")
     
     for i in range(obj_count):
         try:
@@ -85,9 +85,9 @@ def read_objects(file):
             visual_type,
             visual_flags,
             file.read("<H"),
-            file.read("<3f"),
-            file.read("<4f"),
-            file.read("<3f"),
+            file.read_vector3(),
+            file.read_quaternion(),
+            file.read_vector3(),
             *file.read("<IB"),
             file.read_presized_string(),
             file.read_presized_string()
@@ -100,7 +100,7 @@ def read_objects(file):
             Libraries.Joints.append(obj)
             print(f"Appending: {obj.mesh.joint_index}")
 
-def read_mesh(file, obj_type, visual_type):
+def read_mesh(file: IStream, obj_type: ObjectType, visual_type: VisualType) -> LS3DMesh:
     if obj_type == ObjectType.VISUAL:
         if visual_type == VisualType.STANDARD_MESH:
             mesh = StandardMesh()
@@ -136,7 +136,7 @@ def read_mesh(file, obj_type, visual_type):
 
     return mesh
 
-def import_4ds(import_ctx, filepath):
+def import_4ds(import_ctx: bpy.types.Context, filepath: str) -> None:
     Settings.load_settings()
 
     file = IStream(filepath)
@@ -179,7 +179,7 @@ def import_4ds(import_ctx, filepath):
 
     file.close()
 
-def load_4ds(import_ctx, filepath):
+def load_4ds(import_ctx: bpy.types.Context, filepath: str) -> Set[str]:
     import_4ds(import_ctx, filepath)
 
     return {'FINISHED'}

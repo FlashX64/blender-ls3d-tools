@@ -15,6 +15,7 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
+from typing import Set
 import bpy
 from bpy.props import (
     IntProperty
@@ -44,10 +45,10 @@ class LS3DAddTarget(bpy.types.Operator):
     bl_description = "Add a new target slot"
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context: bpy.types.Context) -> bool:
         return context.active_object != None
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         obj = context.active_object
 
         ls3d_props = obj.ls3d_props
@@ -63,10 +64,10 @@ class LS3DRemoveTarget(bpy.types.Operator):
     bl_description = "Remove the selected target slot"
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context: bpy.types.Context) -> bool:
         return context.active_object != None
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         obj = context.active_object
 
         ls3d_props = obj.ls3d_props

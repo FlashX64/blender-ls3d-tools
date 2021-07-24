@@ -62,12 +62,12 @@ class LS3D_PT_PortalPanel(bpy.types.Panel):
     bl_context = "object"
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context: bpy.types.Context) -> bool:
         obj = context.active_object
         props = obj.ls3d_props
         return props.is_portal and obj.parent is not None and obj.parent.type == 'MESH' and props.mesh_type == obj.parent.ls3d_props.mesh_type and props.mesh_type == 'SECTOR'
 
-    def draw(self, context):
+    def draw(self, context: bpy.types.Context) -> None:
         obj = context.active_object
         props = obj.ls3d_props
         portal_props = props.portal_props

@@ -15,9 +15,10 @@
 #
 # ##### END GPL LICENSE BLOCK #####
 
+from typing import Set
 import bpy
 
-def show_hide_by_type(mesh_type, state):
+def show_hide_by_type(mesh_type: str, state: bool) -> None:
     objects = bpy.context.scene.objects
 
     for obj in objects:
@@ -27,7 +28,7 @@ def show_hide_by_type(mesh_type, state):
             if props.mesh_type == mesh_type:
                 obj.hide_viewport = state
 
-def show_hide_sectors(state, portals):
+def show_hide_sectors(state: bool, portals: bool) -> None:
     objects = bpy.context.scene.objects
 
     for obj in objects:
@@ -37,7 +38,7 @@ def show_hide_sectors(state, portals):
             if props.mesh_type == 'SECTOR' and props.is_portal == portals:
                 obj.hide_viewport = state
 
-def show_hide_lods(state):
+def show_hide_lods(state: bool) -> None:
     objects = bpy.context.scene.objects
 
     for obj in objects:
@@ -52,7 +53,7 @@ class LS3DHidePortals(bpy.types.Operator):
     bl_label = "Hide portals"
     bl_description = "Hide all portal meshes in the scene"
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         show_hide_sectors(True, True)
 
         return {'FINISHED'}
@@ -62,7 +63,7 @@ class LS3DShowPortals(bpy.types.Operator):
     bl_label = "Show portals"
     bl_description = "Show all portal meshes in the scene"
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         show_hide_sectors(False, True)
 
         return {'FINISHED'}
@@ -72,7 +73,7 @@ class LS3DHideSectors(bpy.types.Operator):
     bl_label = "Hide sectors"
     bl_description = "Hide all sector meshes in the scene"
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         show_hide_sectors(True, False)
 
         return {'FINISHED'}
@@ -82,7 +83,7 @@ class LS3DShowSectors(bpy.types.Operator):
     bl_label = "Show sectors"
     bl_description = "Show all sector meshes in the scene"
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         show_hide_sectors(False, False)
 
         return {'FINISHED'}
@@ -92,7 +93,7 @@ class LS3DHideOccluders(bpy.types.Operator):
     bl_label = "Hide occluders"
     bl_description = "Hide all occluder meshes in the scene"
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         show_hide_by_type('OCCLUDER', True)
 
         return {'FINISHED'}
@@ -102,7 +103,7 @@ class LS3DShowOccluders(bpy.types.Operator):
     bl_label = "Show occluders"
     bl_description = "Show all occluder meshes in the scene"
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         show_hide_by_type('OCCLUDER', False)
 
         return {'FINISHED'}
@@ -112,7 +113,7 @@ class LS3DHideLods(bpy.types.Operator):
     bl_label = "Hide LODs"
     bl_description = "Hide all LOD meshes in the scene"
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         show_hide_lods(True)
 
         return {'FINISHED'}
@@ -122,7 +123,7 @@ class LS3DShowLods(bpy.types.Operator):
     bl_label = "Show LODs"
     bl_description = "Show all LOD meshes in the scene"
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context) -> Set[str]:
         show_hide_lods(False)
 
         return {'FINISHED'}
@@ -134,7 +135,7 @@ class LS3D_PT_HelperPanel(bpy.types.Panel):
     bl_region_type = "WINDOW"
     bl_context = "world"
 
-    def draw(self, context):
+    def draw(self, context: bpy.types.Context):
         layout = self.layout
 
         row = layout.row(align=True)
