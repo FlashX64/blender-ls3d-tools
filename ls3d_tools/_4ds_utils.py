@@ -46,13 +46,12 @@ from .ls3d_portal import LS3DPortalProperties
 from .ls3d_lens import LS3DLensProperty
 
 
-def create_transformation(translation: Vector, rotation: Quaternion, scale: Vector) -> Matrix:
+def create_transformation(translation: Vector = Vector((0.0, 0.0, 0.0)), rotation: Quaternion = Quaternion((1.0, 0.0, 0.0, 0.0)), scale: Vector = Vector((1.0, 1.0, 1.0))) -> Matrix:
     mat_loc = Matrix.Translation(translation)
     mat_rot = rotation.to_matrix().to_4x4()
     mat_sca = Matrix()
-    mat_sca[0][0] = scale[0]
-    mat_sca[1][1] = scale[1]
-    mat_sca[2][2] = scale[2]
+
+    for i in range(3): mat_sca[i][i] = scale[i]
 
     return mat_loc @ mat_rot @ mat_sca
 
@@ -597,20 +596,18 @@ class LS3DObject:
 
 
 class Mirror(LS3DMesh):
-    unk0: Tuple[float, float, float, float]
-    reflection_matrix: Matrix
+    area_matrix: Matrix
     back_color: Tuple[float, float, float]
-    unk1: int
+    unknown: int
     far_plane: float
     positions: List[Vector]
     faces: List[Tuple[int, int, int]]
 
     def read(self, file: IStream) -> None:
-        file.stream.seek(32, 1)  # Bounding box
-        self.unk0 = file.read("4f")
-        self.reflection_matrix = file.read_matrix4x4()
+        file.stream.seek(48, 1)  # Bounding box
+        self.area_matrix = file.read_matrix4x4()
         self.back_color = file.read("3f")
-        self.unk1 = file.read("<I")
+        self.unknown = file.read("<I")
         self.far_plane = file.read("<f")
 
         vertices_count = file.read("<I")
@@ -642,47 +639,55 @@ class Mirror(LS3DMesh):
     def post_create(self, obj: LS3DObject) -> None:
         bl_obj = obj.bl_obj
 
-        # Create the reflection axis
-        refl_name = bl_obj.name + f".Reflection"
+        # Create the reflected area empty object
+        area_name = bl_obj.name + ".Area"
 
-        refl_obj = bpy.data.objects.new(refl_name, None)
-        refl_obj.empty_display_type = 'ARROWS'
-        refl_obj.parent = bl_obj
+        area_obj = bpy.data.objects.new(area_name, None)
+        area_obj.empty_display_type = 'CUBE'
+        area_obj.parent = bl_obj
+        area_obj.matrix_local = self.area_matrix
 
         mirror_props: LS3DMirrorProperties
         mirror_props = bl_obj.ls3d_props.mirror_props
-        mirror_props.reflection_axis = refl_obj
-        mirror_props.unknown_a = self.unk0
+        mirror_props.area = area_obj
         mirror_props.back_color = self.back_color
-        mirror_props.unknown_b = self.unk1
+        mirror_props.unknown = self.unknown
         mirror_props.far_plane = self.far_plane
 
-        # Link the reflection axis to the scene
-        bpy.context.scene.collection.objects.link(refl_obj)
+        # Link the viewbox to the scene
+        bpy.context.scene.collection.objects.link(area_obj)
 
     def write(self, obj: LS3DObject, file: OStream) -> None:
         mirror_props: LS3DMirrorProperties
         mirror_props = obj.bl_obj.ls3d_props.mirror_props
+
+        def get_area_matrix() -> Matrix:
+            if mirror_props.area:
+                area_obj = mirror_props.area
+                mat = area_obj.matrix_local.copy()
+
+                # Scale the area by the empty display size
+                if area_obj.type == 'EMPTY':
+                    mat @= create_transformation(
+                        scale=Vector((area_obj.empty_display_size,) * 3))
+
+                return mat
+            else:
+                return Matrix().identity()
+
+        area_mat = get_area_matrix()
         bmin, bmax = obj.get_bbox()
+        center = (bmin + bmax) * 0.5
+        radius = (center - bmin).length
 
         file.write_vector4(bmin)
         file.write_vector4(bmax)
-        file.write("<4f", *mirror_props.unknown_a)
+        file.write_vector3(center)
+        file.write("<f", radius)
 
-        if mirror_props.reflection_axis:
-            refl_axis = mirror_props.reflection_axis
-            refl_local = refl_axis.matrix_local
-            refl_loc = refl_local.to_translation()
-            refl_rot = refl_local.to_quaternion()
-            refl_sca = refl_local.to_scale()
-
-            mat = create_transformation(refl_loc, refl_rot, refl_sca)
-        else:
-            mat = Matrix().identity()
-
-        file.write_matrix4x4(mat)
+        file.write_matrix4x4(area_mat)
         file.write("<3f", *mirror_props.back_color)
-        file.write("<I", mirror_props.unknown_b)
+        file.write("<I", mirror_props.unknown)
         file.write("<f", mirror_props.far_plane)
 
         bm = get_bmesh(obj.bl_obj)
@@ -1020,7 +1025,7 @@ class Joint(LS3DMesh):
 
     def set_pose_transformation(self, obj: LS3DObject) -> None:
         pass
-    
+
         # if self.pose_transformation:
         #    pose_bone = self.armature.pose.bones[obj.name]
         #

@@ -181,13 +181,13 @@ def create_ls3d_mirror(ls3d_obj: LS3DObject) -> None:
     ls3d_obj.mesh = Mirror()
 
     bl_obj = ls3d_obj.bl_obj
-    refl_axis = bl_obj.ls3d_props.mirror_props.reflection_axis
+    area_obj = bl_obj.ls3d_props.mirror_props.area
 
-    if refl_axis:
+    if area_obj:
         children = []
 
         for child in bl_obj.children:
-            if child != refl_axis:
+            if child != area_obj:
                 children.append(child)
 
         ls3d_obj.children = children

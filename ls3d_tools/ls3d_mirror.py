@@ -25,14 +25,9 @@ from bpy.props import (
 
 
 class LS3DMirrorProperties(bpy.types.PropertyGroup):
-    reflection_axis: PointerProperty(
-        name="Reflection axis",
+    area: PointerProperty(
+        name="Reflected area",
         type=bpy.types.Object
-    )
-
-    unknown_a: FloatVectorProperty(
-        name="Unknown",
-        size=4
     )
 
     back_color: FloatVectorProperty(
@@ -46,7 +41,7 @@ class LS3DMirrorProperties(bpy.types.PropertyGroup):
         name="Far plane"
     )
 
-    unknown_b: IntProperty(
+    unknown: IntProperty(
         name="Unknown"
     )
 
@@ -71,10 +66,9 @@ class LS3D_PT_MirrorPanel(bpy.types.Panel):
 
         layout = self.layout
         row = layout.row()
-        row.label(text="Reflection axis")
-        row.prop(mirror_props, "reflection_axis", icon='EMPTY_AXIS', text="")
+        row.label(text="Reflected area")
+        row.prop(mirror_props, "area", icon='CUBE', text="")
 
-        layout.prop(mirror_props, "unknown_a")
         layout.prop(mirror_props, "back_color")
         layout.prop(mirror_props, "far_plane")
-        layout.prop(mirror_props, "unknown_b")
+        layout.prop(mirror_props, "unknown")

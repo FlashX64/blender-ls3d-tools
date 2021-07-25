@@ -21,6 +21,23 @@ from bmesh import new
 from mathutils import Vector, Quaternion, Matrix
 from bpy_extras.io_utils import axis_conversion
 
+def convert_ls3d_matrix4x4(mat: Matrix) -> Matrix:
+    mat.transpose()
+
+    # Swap the second and third row
+    row0 = mat[1].copy()
+    mat[1] = mat[2]
+    mat[2] = row0
+
+    # Swap the second and third column
+    col1 = mat.col[1].copy()
+
+    for i in range(4):
+        mat[i][1] = mat[i][2]
+
+    for i in range(4):
+        mat[i][2] = col1[i]
+
 class IStream:
     def __init__(self, filepath):
         self.stream = open(filepath, "rb")
@@ -53,9 +70,8 @@ class IStream:
         return Quaternion((quat[3], quat[0], quat[2], quat[1]))
 
     def read_matrix4x4(self) -> Matrix:
-        mat = Matrix((self.read("4f"), self.read("4f"),
-                      self.read("4f"), self.read("4f")))
-        mat.transpose()
+        mat = Matrix((self.read("4f"), self.read("4f"), self.read("4f"), self.read("4f")))
+        convert_ls3d_matrix4x4(mat)
 
         return mat
 
@@ -100,7 +116,7 @@ class OStream:
 
     def write_matrix4x4(self, mat: Matrix) -> None:
         new_mat = mat.copy()
-        new_mat.transpose()
+        convert_ls3d_matrix4x4(new_mat)
 
         packed = struct.pack(
             "<16f", *new_mat[0], *new_mat[1], *new_mat[2], *new_mat[3])
