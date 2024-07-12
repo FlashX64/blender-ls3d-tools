@@ -239,7 +239,7 @@ class LS3DMaterial:
         if NODE_SHADER in ntree.nodes:
             shader_node = ntree.nodes[NODE_SHADER]
             shader_node.inputs["Base Color"].default_value = mat.diffuse_color
-            shader_node.inputs["Emission"].default_value = (
+            shader_node.inputs["Emission Color"].default_value = (
                 *self.emission_color[0:3], 1.0)
             shader_node.inputs["Alpha"].default_value = self.opacity
             shader_node.inputs["Metallic"].default_value = self.glossiness / 100.0
@@ -334,7 +334,7 @@ class LS3DMaterial:
 
             file.write("<I", flags)
             file.write("<16f", *props.ambient_color, *
-                       shader_node.inputs["Base Color"].default_value, *props.specular_color, *shader_node.inputs["Emission"].default_value)
+                       shader_node.inputs["Base Color"].default_value, *props.specular_color, *shader_node.inputs["Emission Color"].default_value)
             file.write("<2f", shader_node.inputs["Metallic"].default_value *
                        100.0, shader_node.inputs["Alpha"].default_value)
 

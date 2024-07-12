@@ -68,7 +68,7 @@ def create_ls3d_material(material: bpy.types.Material) -> None:
     # Shader node
     bsdf = ntree.nodes.new(type="ShaderNodeBsdfPrincipled")
     bsdf.name = NODE_SHADER
-    bsdf.inputs["Specular"].default_value = 0.0
+    bsdf.inputs["Specular IOR Level"].default_value = 0.0
     ntree.links.new(output.inputs["Surface"], bsdf.outputs["BSDF"])
 
     # Diffuse TexImage
@@ -389,7 +389,7 @@ class LS3D_PT_MaterialPanel(bpy.types.Panel):
             layout.prop(props, "ambient_color")
             layout.prop(shader_node.inputs["Base Color"], "default_value", text="Diffuse color")
             layout.prop(props, "specular_color")
-            layout.prop(shader_node.inputs["Emission"], "default_value", text="Emission color")
+            layout.prop(shader_node.inputs["Emission Color"], "default_value", text="Emission color")
 
             # Opacity
             row = layout.row()

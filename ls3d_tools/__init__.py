@@ -19,8 +19,8 @@ bl_info = {
     "name" : "LS3D tools",
     "author" : "Filip Vencelides",
     "description" : "Import-Export native LS3D engine v5.559 formats",
-    "blender" : (2, 90, 0),
-    "version" : (0, 0, 1),
+    "blender" : (4, 1, 1),
+    "version" : (0, 0, 2),
     "location" : "File > Import-Export",
     "warning" : "",
     "category" : "Import-Export"
