@@ -58,6 +58,15 @@ class IStream:
         except:
             return fallback
 
+    def read_C_string(self) -> str:
+        chars = []
+        while True:
+            b = self.read("<B")
+            if  b == 0:
+                break
+            chars.append(b)
+        return bytes(chars).decode("utf-8", errors="ignore")
+
     def read_presized_string(self) -> str:
         return self.read_string(self.read("<B"))
 

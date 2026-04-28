@@ -17,10 +17,10 @@
 
 bl_info = {
     "name" : "LS3D tools",
-    "author" : "Filip Vencelides",
+    "author" : "Filip Vencelides, Metox",
     "description" : "Import-Export native LS3D engine v5.559 formats",
-    "blender" : (4, 1, 1),
-    "version" : (0, 0, 2),
+    "blender" : (5, 1, 1),
+    "version" : (0, 1, 0),
     "location" : "File > Import-Export",
     "warning" : "",
     "category" : "Import-Export"
@@ -107,8 +107,27 @@ class Import4DS(Operator, ImportHelper):
         from . import import_4ds
         return import_4ds.load_4ds(context, self.filepath)
 
-def menu_func_import(self, context: bpy.types.Context) -> None:
+def menu_func_import4ds(self, context: bpy.types.Context) -> None:
     self.layout.operator(Import4DS.bl_idname, text="LS3D 4DS (.4ds)")
+
+class Import5DS(Operator, ImportHelper):
+    """Load a LS3D 5DS file"""
+    bl_idname = "import_scene.5ds"
+    bl_label = "Import 5DS"
+
+    filename_ext = ".5ds"
+
+    filter_glob: StringProperty(
+        default="*.5ds",
+        options={'HIDDEN'}
+    )
+
+    def execute(self, context: bpy.types.Context) -> Set[str]:
+        from . import import_5ds
+        return import_5ds.load_5ds(context, self.filepath)
+
+def menu_func_import5ds(self, context: bpy.types.Context) -> None:
+    self.layout.operator(Import5DS.bl_idname, text="LS3D 5DS (.5ds)")
 
 class Export4DS(Operator, ExportHelper):
     """Save a LS3D 4DS file"""
@@ -127,8 +146,29 @@ class Export4DS(Operator, ExportHelper):
 
         return export_4ds.save_4ds(context, self.filepath)
 
-def menu_func_export(self, context: bpy.types.Context) -> None:
+def menu_func_export4ds(self, context: bpy.types.Context) -> None:
     self.layout.operator(Export4DS.bl_idname, text="LS3D 4DS (.4ds)")
+
+class Export5DS(Operator, ExportHelper):
+    """Save a LS3D 5DS file"""
+    bl_idname = "export_scene.5ds"
+    bl_label = "Export 5DS"
+
+    filename_ext = ".5ds"
+
+    filter_glob: StringProperty(
+        default="*.5ds",
+        options={'HIDDEN'}
+    )
+
+    def execute(self, context: bpy.types.Context) -> Set[str]:
+        from . import export_5ds
+
+        return export_5ds.save_5ds(context, self.filepath)
+
+def menu_func_export5ds(self, context: bpy.types.Context) -> None:
+    self.layout.operator(Export5DS.bl_idname, text="LS3D 5DS (.5ds)")
+
 
 classes = [
     LS3DObjectProperty,
@@ -173,7 +213,9 @@ classes = [
     LS3D_PT_HelperPanel,
 
     Import4DS,
-    Export4DS
+    Export4DS,
+    Import5DS,
+    Export5DS
 ]
 
 def register() -> None:    
@@ -184,8 +226,11 @@ def register() -> None:
     bpy.types.Object.ls3d_props = bpy.props.PointerProperty(type=LS3DObjectProperties)
     bpy.types.Material.ls3d_props = bpy.props.PointerProperty(type=LS3DMaterialProperties)
 
-    bpy.types.TOPBAR_MT_file_import.append(menu_func_import)
-    bpy.types.TOPBAR_MT_file_export.append(menu_func_export)
+    bpy.types.TOPBAR_MT_file_import.append(menu_func_import4ds)
+    bpy.types.TOPBAR_MT_file_import.append(menu_func_import5ds)
+
+    bpy.types.TOPBAR_MT_file_export.append(menu_func_export4ds)
+    bpy.types.TOPBAR_MT_file_export.append(menu_func_export5ds)
 
 
 def unregister() -> None:
@@ -196,8 +241,11 @@ def unregister() -> None:
     for cls in classes:
         bpy.utils.unregister_class(cls)
 
-    bpy.types.TOPBAR_MT_file_import.remove(menu_func_import)
-    bpy.types.TOPBAR_MT_file_export.remove(menu_func_export)
+    bpy.types.TOPBAR_MT_file_import.remove(menu_func_import4ds)
+    bpy.types.TOPBAR_MT_file_import.remove(menu_func_import5ds)
+
+    bpy.types.TOPBAR_MT_file_export.remove(menu_func_export4ds)
+    bpy.types.TOPBAR_MT_file_export.remove(menu_func_export5ds)
 
 
 if __name__ == "__main__":
